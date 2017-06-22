@@ -42,7 +42,8 @@
         
         if ([body hasSuffix:@".json"]) {
             NSString *name = [body substringToIndex:body.length-5];
-            NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+//            NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+            NSBundle *bundle = [NSBundle mainBundle];
             NSString *path = [bundle pathForResource:name ofType:@"json"];
             NSAssert(path.length, @"file:%@ not exist",body);
             bodyString = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
@@ -56,6 +57,25 @@
         if (!json) {
             NSAssert(json, @"response string is invaild json");
         }
+        return self;
+    };
+}
+
+- (ResponseWithBodyMethod)withJsonFilePath {
+    return ^(NSString *filePath) {
+        if (![filePath hasSuffix:@".json"]) {
+            NSAssert(YES, @"not json file");
+        }
+        
+        NSString *bodyString = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:nil];
+        self.response.body = [bodyString data];
+        //校验
+        NSError *error = nil;
+        id json = [NSJSONSerialization JSONObjectWithData:self.response.body options:NSJSONReadingMutableContainers error:&error];
+        if (!json) {
+            NSAssert(json, @"response string is invaild json");
+        }
+
         return self;
     };
 }
